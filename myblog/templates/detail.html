@@ -1,0 +1,86 @@
+{% extends 'base.html'%}
+
+{% block title %}
+{{ post.title_tag }}
+        
+{% endblock%}
+
+{% block content %}
+<!-- Used for the authentication
+     current User: {{ user.id }}
+post author: {{ post.author.id }} -->
+
+<h1>{{ post.title }}</h1>
+<small>By: {{ post.author.first_name }}
+    {{post.author.last_name}}</small>- {{post.post_date }} 
+    <br/>
+    - {{ post.category }}
+    {% if user.is_authenticated %}
+        {% if  user.id  ==  post.author.id  %}
+            <small><a href="{% url 'update_blog' post.pk %}">(Edit)</a></small>
+
+            <small><a href="{% url 'delete_blog' post.pk %}">(Delete)</a></small>
+        {% endif %}
+    {% endif %}
+</br> 
+
+<hr>
+<br/>
+{% if post.header_image %}
+<img src="{{ post.header_image.url }} ">
+<br/><br/><h2></h2>
+{% endif %}
+
+{{ post.body | safe }}
+
+
+
+
+<br/><br/>
+
+
+<a href="{% url 'home' %}" class="alert alert-primary" >Back</a>
+<br/> <br/>
+<hr>
+<br/>
+<form action="{% url 'like_blog' post.pk %}" 
+method="POST">
+    {% csrf_token %}
+
+    {% if user.is_authenticated %}
+        {% if liked %}
+        <button type="submit", name="blog_id", value="{{ post.id }}", class="btn btn-danger btn-sm">Unlike</button>
+
+        {% else %}
+        <button type="submit", name="blog_id", value="{{ post.id }}", class="btn btn-primary btn-sm">Like</button> 
+        
+        {% endif %}
+    {% else %}
+     <small><a  href="{% url 'login' %}">Login</a> to like </small>
+    {% endif %}
+    - {{ total_likes }} Likes
+    
+
+</form>
+
+<br/>
+<h2> Comments</h2>
+
+
+{% if not post.comments.all %}
+No Comments Yet. <a href="{% url 'add_comment' post.pk %}">Add One</a>
+
+{% else %}
+{% for comment in post.comments.all %}
+    <strong>{{comment.name}} - {{comment.date_added}}</strong>
+    <br/>
+    {{comment.body}}
+    <br/><br/>
+    {% endfor %}
+<hr>
+<a href="{% url 'add_comment' post.pk %}">Add Comment</a>
+{% endif %}
+
+
+{% endblock %}
+
